@@ -23,6 +23,21 @@ dependencies {
     implementation deps.support.appCompat
     implementation deps.support.constraintlayout
 
+    // room
+    implementation deps.room.runtime
+    annotationProcessor deps.room.compiler
+
+    // butter knife
+    implementation deps.butterknife.runtime
+    annotationProcessor deps.butterknife.compiler
+
+    // retrofit
+    implementation deps.retrofit.root
+    implementation deps.retrofit.converter_gson
+
+    // logger
+    implementation deps.mylogger
+
     testImplementation deps.test.junit
     androidTestImplementation deps.test.runner
     androidTestImplementation deps.test.espresso
