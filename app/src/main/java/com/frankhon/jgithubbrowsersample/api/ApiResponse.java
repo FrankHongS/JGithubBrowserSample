@@ -85,6 +85,10 @@ public class ApiResponse {
 
             return nextPage;
         }
+
+        public T getBody() {
+            return body;
+        }
     }
 
     public static class ApiErrorResponse extends ApiResponse {

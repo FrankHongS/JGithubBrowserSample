@@ -14,6 +14,8 @@ import retrofit2.http.Path;
 public interface GithubService {
 
     @GET("users/{login}")
-    LiveData getUser(@Path("login") String login);
+    LiveData<ApiResponse> getUser(@Path("login") String login);
 
+    @GET("users/{login}/repos")
+    LiveData<ApiResponse> getRepos(@Path("login") String login);
 }
