@@ -6,6 +6,7 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
+import com.frankhon.jgithubbrowsersample.vo.Repo;
 import com.frankhon.jgithubbrowsersample.vo.User;
 
 /**
@@ -13,7 +14,7 @@ import com.frankhon.jgithubbrowsersample.vo.User;
  * E-mail: v-shhong@microsoft.com
  */
 @Database(
-        entities = {User.class},
+        entities = {User.class, Repo.class},
         version = 1,
         exportSchema = false
 )
@@ -39,5 +40,7 @@ public abstract class GithubDb extends RoomDatabase {
     }
 
     public abstract UserDao userDao();
+
+    public abstract RepoDao repoDao();
 
 }

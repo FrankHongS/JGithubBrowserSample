@@ -1,6 +1,7 @@
 package com.frankhon.jgithubbrowsersample.repository;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Transformations;
 
 import com.frankhon.jgithubbrowsersample.AppExecutors;
 import com.frankhon.jgithubbrowsersample.api.ApiResponse;
@@ -8,8 +9,10 @@ import com.frankhon.jgithubbrowsersample.api.GithubServiceImpl;
 import com.frankhon.jgithubbrowsersample.api.RepoSearchResponse;
 import com.frankhon.jgithubbrowsersample.db.GithubDb;
 import com.frankhon.jgithubbrowsersample.db.RepoDao;
+import com.frankhon.jgithubbrowsersample.util.AbsentLiveData;
 import com.frankhon.jgithubbrowsersample.util.RateLimiter;
 import com.frankhon.jgithubbrowsersample.vo.Repo;
+import com.frankhon.jgithubbrowsersample.vo.RepoSearchResult;
 import com.frankhon.jgithubbrowsersample.vo.Resource;
 
 import java.util.ArrayList;
@@ -36,8 +39,8 @@ public final class RepoRepository {
         this.githubService = githubService;
     }
 
-    public LiveData<Resource<List<Repo>>> loadRepos(String owner){
-        return new NetworkBoundResource<List<Repo>,List<Repo>>(appExecutors){
+    public LiveData<Resource<List<Repo>>> loadRepos(String owner) {
+        return new NetworkBoundResource<List<Repo>, List<Repo>>(appExecutors) {
             @Override
             protected void saveCallResult(List<Repo> item) {
                 repoDao.insertRepos(item);
@@ -45,7 +48,7 @@ public final class RepoRepository {
 
             @Override
             protected boolean shouldFetch(List<Repo> data) {
-                return data==null||data.isEmpty()||repoListRateLimit.shouldFetch(owner);
+                return data == null || data.isEmpty() || repoListRateLimit.shouldFetch(owner);
             }
 
             @Override
@@ -65,37 +68,68 @@ public final class RepoRepository {
         }.asLiveData();
     }
 
-    public LiveData<Resource<List<Repo>>> search(String query){
-        return new NetworkBoundResource<List<Repo>, RepoSearchResponse>(appExecutors){
+    public LiveData<Resource<Boolean>> searchNextPage(String query){
+        FetchNextSearchPageTask fetchNextSearchPageTask=new FetchNextSearchPageTask(
+                query,
+                githubService,
+                db
+        );
+        appExecutors.getNetworkIO().execute(fetchNextSearchPageTask);
+        return fetchNextSearchPageTask.getLiveData();
+    }
+
+    public LiveData<Resource<List<Repo>>> search(String query) {
+        return new NetworkBoundResource<List<Repo>, RepoSearchResponse>(appExecutors) {
             @Override
             protected void saveCallResult(RepoSearchResponse item) {
 
-                if (item==null){
+                if (item == null) {
                     return;
                 }
 
-                List<Integer> reposIds=new ArrayList<>();
-                for(Repo repo:item.getItems()){
+                List<Integer> reposIds = new ArrayList<>();
+                for (Repo repo : item.getItems()) {
                     reposIds.add(repo.getId());
                 }
-
-
+                RepoSearchResult repoSearchResult = new RepoSearchResult(
+                        query,
+                        reposIds,
+                        item.getTotal(),
+                        item.getNextPage()
+                );
+                db.runInTransaction(() -> {
+                    repoDao.insertRepos(item.getItems());
+                    repoDao.insert(repoSearchResult);
+                });
 
             }
 
             @Override
             protected boolean shouldFetch(List<Repo> data) {
-                return false;
+                return data == null;
             }
 
             @Override
             protected LiveData<List<Repo>> loadFromDb() {
-                return null;
+                return Transformations.switchMap(repoDao.search(query), searchData -> {
+                    if (searchData == null) {
+                        return AbsentLiveData.create();
+                    } else {
+                        return repoDao.loadOrdered(searchData.getRepoIds());
+                    }
+                });
             }
 
             @Override
             protected LiveData<ApiResponse> createCall() {
-                return null;
+                return githubService.searchRepos(query);
+            }
+
+            @Override
+            protected RepoSearchResponse processResponse(ApiResponse.ApiSuccessResponse<RepoSearchResponse> response) {
+                RepoSearchResponse body = response.getBody();
+                body.setNextPage(response.getNextPage());
+                return body;
             }
         }.asLiveData();
     }

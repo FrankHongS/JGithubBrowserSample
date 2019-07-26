@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 
 import com.frankhon.jgithubbrowsersample.util.LiveDataCallAdapterFactory;
 
+import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -28,11 +29,11 @@ public class GithubServiceImpl {
                 .create(GithubService.class);
     }
 
-    public static GithubServiceImpl getInstance(){
-        if(INSTANCE==null){
-            synchronized (GithubServiceImpl.class){
-                if(INSTANCE==null){
-                    INSTANCE=new GithubServiceImpl();
+    public static GithubServiceImpl getInstance() {
+        if (INSTANCE == null) {
+            synchronized (GithubServiceImpl.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new GithubServiceImpl();
                 }
             }
         }
@@ -40,11 +41,19 @@ public class GithubServiceImpl {
         return INSTANCE;
     }
 
-    public LiveData<ApiResponse> getUser(String login){
+    public LiveData<ApiResponse> getUser(String login) {
         return mGithubService.getUser(login);
     }
 
-    public LiveData<ApiResponse> getRepos(String login){
+    public LiveData<ApiResponse> getRepos(String login) {
         return mGithubService.getRepos(login);
+    }
+
+    public LiveData<ApiResponse> searchRepos(String query) {
+        return mGithubService.searchRepos(query);
+    }
+
+    public Call<RepoSearchResponse> searchRepos(String query, int page) {
+        return mGithubService.searchRepos(query, page);
     }
 }

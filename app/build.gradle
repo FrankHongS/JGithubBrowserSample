@@ -25,8 +25,11 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation deps.support.appCompat
+    implementation deps.support.material
     implementation deps.support.constraintlayout
 
+    // lifecycle
+    implementation deps.lifecycle_extensions
     // room
     implementation deps.room.runtime
     annotationProcessor deps.room.compiler
