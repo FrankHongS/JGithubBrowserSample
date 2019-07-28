@@ -3,6 +3,7 @@ package com.frankhon.jgithubbrowsersample.vo;
 import androidx.room.Entity;
 
 import com.google.gson.annotations.SerializedName;
+import androidx.annotation.NonNull;
 
 /**
  * Created by Frank_Hon on 7/23/2019.
@@ -11,6 +12,7 @@ import com.google.gson.annotations.SerializedName;
 @Entity(primaryKeys = "login")
 public class User {
 
+    @NonNull
     @SerializedName("login")
     private String login;
 

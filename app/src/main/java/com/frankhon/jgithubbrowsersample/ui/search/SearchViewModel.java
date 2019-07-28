@@ -1,6 +1,7 @@
 package com.frankhon.jgithubbrowsersample.ui.search;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -27,8 +28,6 @@ public class SearchViewModel extends ViewModel {
     private NextPageHandler nextPageHandler;
 
     private LiveData<Resource<List<Repo>>> results;
-
-    private LiveData<LoadMoreState> loadMoreState;
 
     public SearchViewModel(RepoRepository repoRepository) {
         this.query = new MutableLiveData<>();
@@ -72,7 +71,11 @@ public class SearchViewModel extends ViewModel {
         return nextPageHandler.loadMoreState;
     }
 
-    private class LoadMoreState {
+    public LiveData<Resource<List<Repo>>> getResults() {
+        return results;
+    }
+
+    public class LoadMoreState {
         private boolean isRunning;
         private String errorMessage;
 
@@ -105,11 +108,13 @@ public class SearchViewModel extends ViewModel {
         private String query = "";
         private boolean hasMore = false;
 
-        public NextPageHandler(RepoRepository repository) {
+        NextPageHandler(RepoRepository repository) {
             this.repository = repository;
+            reset();
         }
 
         private void queryNextPage(String query) {
+            Log.d("Hon", "queryNextPage: "+query+"  "+this.query);
             if (query == null || this.query.equals(query)) {
                 return;
             }
@@ -130,14 +135,14 @@ public class SearchViewModel extends ViewModel {
             } else {
                 switch (result.getStatus()) {
                     case RequestStatus.SUCCESS:
+                        loadMoreState.setValue(new LoadMoreState(false, null));
                         hasMore = result.getData();
                         unregister();
-                        loadMoreState.setValue(new LoadMoreState(false, null));
                         break;
                     case RequestStatus.ERROR:
+                        loadMoreState.setValue(new LoadMoreState(false, result.getMessage()));
                         hasMore = true;
                         unregister();
-                        loadMoreState.setValue(new LoadMoreState(false, result.getMessage()));
                         break;
                     case RequestStatus.LOADING:
                         // ignore

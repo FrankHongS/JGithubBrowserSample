@@ -1,16 +1,19 @@
 package com.frankhon.jgithubbrowsersample.repository;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Transformations;
 
 import com.frankhon.jgithubbrowsersample.AppExecutors;
-import com.frankhon.jgithubbrowsersample.api.ApiResponse;
+import com.frankhon.jgithubbrowsersample.api.ApiResponseUtil;
 import com.frankhon.jgithubbrowsersample.api.GithubServiceImpl;
 import com.frankhon.jgithubbrowsersample.api.RepoSearchResponse;
 import com.frankhon.jgithubbrowsersample.db.GithubDb;
 import com.frankhon.jgithubbrowsersample.db.RepoDao;
 import com.frankhon.jgithubbrowsersample.util.AbsentLiveData;
 import com.frankhon.jgithubbrowsersample.util.RateLimiter;
+import com.frankhon.jgithubbrowsersample.vo.Contributor;
 import com.frankhon.jgithubbrowsersample.vo.Repo;
 import com.frankhon.jgithubbrowsersample.vo.RepoSearchResult;
 import com.frankhon.jgithubbrowsersample.vo.Resource;
@@ -25,6 +28,8 @@ import java.util.concurrent.TimeUnit;
  */
 public final class RepoRepository {
 
+    private static volatile RepoRepository INSTANCE;
+
     private final AppExecutors appExecutors;
     private final GithubDb db;
     private final RepoDao repoDao;
@@ -32,11 +37,24 @@ public final class RepoRepository {
 
     private final RateLimiter<String> repoListRateLimit = new RateLimiter<>(10, TimeUnit.MINUTES);
 
-    public RepoRepository(AppExecutors appExecutors, GithubDb db, RepoDao repoDao, GithubServiceImpl githubService) {
+    private RepoRepository(AppExecutors appExecutors, GithubDb db, GithubServiceImpl githubService) {
         this.appExecutors = appExecutors;
         this.db = db;
-        this.repoDao = repoDao;
         this.githubService = githubService;
+
+        this.repoDao = db.repoDao();
+    }
+
+    public static RepoRepository getInstance(AppExecutors appExecutors, GithubDb db, GithubServiceImpl githubService) {
+        if (INSTANCE == null) {
+            synchronized (RepoRepository.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new RepoRepository(appExecutors, db, githubService);
+                }
+            }
+        }
+
+        return INSTANCE;
     }
 
     public LiveData<Resource<List<Repo>>> loadRepos(String owner) {
@@ -57,7 +75,7 @@ public final class RepoRepository {
             }
 
             @Override
-            protected LiveData<ApiResponse> createCall() {
+            protected LiveData<ApiResponseUtil.ApiResponse<List<Repo>>> createCall() {
                 return githubService.getRepos(owner);
             }
 
@@ -68,8 +86,37 @@ public final class RepoRepository {
         }.asLiveData();
     }
 
-    public LiveData<Resource<Boolean>> searchNextPage(String query){
-        FetchNextSearchPageTask fetchNextSearchPageTask=new FetchNextSearchPageTask(
+    public LiveData<Resource<Repo>> loadRepo(String owner, String name) {
+        return new NetworkBoundResource<Repo, Repo>(appExecutors) {
+            @Override
+            protected void saveCallResult(Repo item) {
+                repoDao.insert(item);
+            }
+
+            @Override
+            protected boolean shouldFetch(Repo data) {
+                return data == null;
+            }
+
+            @Override
+            protected LiveData<Repo> loadFromDb() {
+                return repoDao.load(owner, name);
+            }
+
+            @Override
+            protected LiveData<ApiResponseUtil.ApiResponse<Repo>> createCall() {
+                return githubService.getRepo(owner, name);
+            }
+        }.asLiveData();
+    }
+
+    public LiveData<Resource<List<Contributor>>> loadContributors(String owner, String name) {
+        // todo
+        return null;
+    }
+
+    public LiveData<Resource<Boolean>> searchNextPage(String query) {
+        FetchNextSearchPageTask fetchNextSearchPageTask = new FetchNextSearchPageTask(
                 query,
                 githubService,
                 db
@@ -111,6 +158,7 @@ public final class RepoRepository {
 
             @Override
             protected LiveData<List<Repo>> loadFromDb() {
+                Log.d("Hon", "loadFromDb: ");
                 return Transformations.switchMap(repoDao.search(query), searchData -> {
                     if (searchData == null) {
                         return AbsentLiveData.create();
@@ -121,12 +169,12 @@ public final class RepoRepository {
             }
 
             @Override
-            protected LiveData<ApiResponse> createCall() {
+            protected LiveData<ApiResponseUtil.ApiResponse<RepoSearchResponse>> createCall() {
                 return githubService.searchRepos(query);
             }
 
             @Override
-            protected RepoSearchResponse processResponse(ApiResponse.ApiSuccessResponse<RepoSearchResponse> response) {
+            protected RepoSearchResponse processResponse(ApiResponseUtil.ApiSuccessResponse<RepoSearchResponse> response) {
                 RepoSearchResponse body = response.getBody();
                 body.setNextPage(response.getNextPage());
                 return body;

@@ -2,8 +2,16 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/repo_card"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="@dimen/card_margin_left_and_right"
+    android:layout_marginRight="@dimen/card_margin_left_and_right"
+    android:layout_marginTop="@dimen/card_margin_top_and_bottom"
+    android:layout_marginBottom="@dimen/card_margin_top_and_bottom"
+    app:cardCornerRadius="2dp"
+    app:cardElevation="1dp"
+    app:cardUseCompatPadding="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -11,13 +19,15 @@
 
         <TextView
             android:id="@+id/name"
-            android:layout_width="368dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/default_margin"
-            android:layout_marginLeft="@dimen/default_margin"
-            android:layout_marginTop="16dp"
+            android:layout_marginStart="12dp"
+            android:textColor="@color/default_text_color"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="@+id/stars"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/stars"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/stars"
             tools:text="repository name" />
 
         <TextView
@@ -25,11 +35,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/default_margin"
-            android:layout_marginLeft="@dimen/default_margin"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="2dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/name"
-            tools:layout_editor_absoluteX="@dimen/default_margin"
+            app:layout_constraintTop_toBottomOf="@+id/stars"
             tools:text="this is some description more description more description" />
 
         <TextView
@@ -37,10 +48,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/default_margin"
-            android:layout_marginLeft="@dimen/default_margin"
             android:layout_marginTop="@dimen/default_margin"
-            android:drawableStart="@android:drawable/btn_star"
-            android:drawableLeft="@android:drawable/btn_star"
+            android:drawableStart="@drawable/ic_star_border_black_36dp"
             android:gravity="center"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"

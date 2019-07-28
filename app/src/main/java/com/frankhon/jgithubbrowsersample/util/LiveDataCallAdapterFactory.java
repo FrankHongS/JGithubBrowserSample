@@ -3,7 +3,7 @@ package com.frankhon.jgithubbrowsersample.util;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 
-import com.frankhon.jgithubbrowsersample.api.ApiResponse;
+import com.frankhon.jgithubbrowsersample.api.ApiResponseUtil;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
@@ -28,7 +28,7 @@ public class LiveDataCallAdapterFactory extends Factory {
 
         Type observableType = getParameterUpperBound(0, (ParameterizedType) returnType);
         Class rawObservableType = getRawType(observableType);
-        if (rawObservableType != ApiResponse.class) {
+        if (rawObservableType != ApiResponseUtil.ApiResponse.class) {
             throw new IllegalArgumentException("type must be a resource");
         }
 

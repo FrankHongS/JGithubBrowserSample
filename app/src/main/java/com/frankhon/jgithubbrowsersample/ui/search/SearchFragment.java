@@ -1,23 +1,35 @@
 package com.frankhon.jgithubbrowsersample.ui.search;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.frankhon.jgithubbrowsersample.AppExecutors;
 import com.frankhon.jgithubbrowsersample.R;
+import com.frankhon.jgithubbrowsersample.ui.common.RepoListAdapter;
+import com.frankhon.jgithubbrowsersample.util.Util;
+import com.frankhon.jgithubbrowsersample.viewmodel.GithubViewModelFactory;
+import com.google.android.material.snackbar.Snackbar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static com.frankhon.jgithubbrowsersample.util.RequestStatus.LOADING;
 
 /**
  * Created by Frank_Hon on 7/22/2019.
@@ -27,9 +39,20 @@ public class SearchFragment extends Fragment {
 
     @BindView(R.id.repo_list)
     RecyclerView repoList;
+    @BindView(R.id.load_more_bar)
+    ProgressBar loadMoreBar;
+    @BindView(R.id.input)
+    EditText input;
+    @BindView(R.id.retry)
+    Button retry;
+    @BindView(R.id.progress_bar)
+    ProgressBar progressBar;
 
-    private AppExecutors appExecutors;
     private SearchViewModel searchViewModel;
+
+    private RepoListAdapter adapter;
+
+    private boolean shouldLoadingMore;
 
     @Nullable
     @Override
@@ -40,22 +63,94 @@ public class SearchFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        searchViewModel= ViewModelProviders.of(this).get(SearchViewModel.class);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        searchViewModel = ViewModelProviders.of(this, new GithubViewModelFactory(getContext())).get(SearchViewModel.class);
+
+        initRecyclerView();
+        initSearchInputListener();
+
+        retry.setOnClickListener(v -> searchViewModel.refresh());
     }
 
-    private void initRecyclerView(){
+    private void initSearchInputListener() {
+        input.setOnEditorActionListener((view, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                doSearch(view);
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        input.setOnKeyListener((view, keyCode, event) -> {
+            if (event.getAction() == KeyEvent.ACTION_DOWN && event.getAction() == KeyEvent.KEYCODE_ENTER) {
+                doSearch(view);
+                return true;
+            } else {
+                return false;
+            }
+        });
+    }
+
+    private void doSearch(View view) {
+        String query = input.getText().toString();
+        // Dismiss keyboard
+        Util.dismissKeyboard(getContext(), view);
+        searchViewModel.setQuery(query);
+    }
+
+    private void initRecyclerView() {
         repoList.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new RepoListAdapter(AppExecutors.getInstance());
+        adapter.setOnRepoClickListener(repo -> {
+            Toast.makeText(getContext(), repo.getName(), Toast.LENGTH_SHORT).show();
+        });
+        repoList.setAdapter(adapter);
         repoList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                if(recyclerView.getLayoutManager()!=null){
-                    LinearLayoutManager layoutManager= (LinearLayoutManager) recyclerView.getLayoutManager();
-                    int lastPosition=layoutManager.findLastVisibleItemPosition();
-//                    if (lastPosition==)
+                if (recyclerView.getLayoutManager() != null) {
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                    int lastPosition = layoutManager.findLastVisibleItemPosition();
+                    Log.d("Hua", "onScrolled: " + lastPosition + "  " + (adapter.getItemCount() - 1));
+                    if (lastPosition != -1 && !shouldLoadingMore && lastPosition == adapter.getItemCount() - 1) {
+                        Log.d("Hon", "onScrolled: loadNextPage " + lastPosition);
+                        searchViewModel.loadNextPage();
+                    }
                 }
             }
+        });
+
+        searchViewModel.getResults().observe(this, result -> {
+            if (result != null) {
+                progressBar.setVisibility(result.getStatus() == LOADING ? View.VISIBLE : View.GONE);
+                Log.d("Hon", result.getStatus() + "");
+                if (result.getData() != null) {
+                    int size = result.getData().size();
+                    Log.d("Hon", "size: " + size);
+                    Log.d("Hon", result.getData().get(0).toString());
+                    Log.d("Hon", result.getData().get(size - 1).toString());
+                }
+                adapter.submitList(result.getData());
+            }
+        });
+
+        searchViewModel.getLoadMoreState().observe(this, loadingMore -> {
+
+            if (loadingMore == null) {
+                Log.d("Hon", "loadingMore: null");
+                shouldLoadingMore = false;
+            } else {
+                Log.d("Hon", "loadingMore: " + loadingMore.isRunning());
+                shouldLoadingMore = loadingMore.isRunning();
+                String error = loadingMore.getErrorMessage();
+                if (error != null) {
+                    Snackbar.make(loadMoreBar, error, Snackbar.LENGTH_LONG).show();
+                }
+            }
+
+            loadMoreBar.setVisibility(shouldLoadingMore ? View.VISIBLE : View.GONE);
         });
     }
 }

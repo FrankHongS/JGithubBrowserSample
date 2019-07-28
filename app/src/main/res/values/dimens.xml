@@ -2,4 +2,7 @@
 <resources>
     <dimen name="photo_size">64dp</dimen>
     <dimen name="default_margin">8dp</dimen>
+
+    <dimen name="card_margin_left_and_right">8dp</dimen>
+    <dimen name="card_margin_top_and_bottom">3dp</dimen>
 </resources>

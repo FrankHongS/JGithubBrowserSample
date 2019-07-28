@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import com.frankhon.jgithubbrowsersample.util.StringUtil;
 import com.hon.mylogger.MyLogger;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.regex.Matcher;
 
@@ -14,18 +15,18 @@ import retrofit2.Response;
  * Created by Frank_Hon on 7/23/2019.
  * E-mail: v-shhong@microsoft.com
  */
-public class ApiResponse {
+public class ApiResponseUtil {
 
     public static ApiErrorResponse create(Throwable throwable) {
         return new ApiErrorResponse(throwable.getMessage() == null ? "unknown error" : throwable.getMessage());
     }
 
-    public static <T> ApiResponse create(Response<T> response) {
-        ApiResponse target;
+    public static <T> ApiResponse<T> create(Response<T> response) {
+        ApiResponse<T> target;
         if (response.isSuccessful()) {
             T body = response.body();
             if (body == null || response.code() == 204) {
-                target = new ApiEmptyResponse();
+                target = new ApiEmptyResponse<>();
             } else {
                 String linkHeader = "";
                 if (response.headers() != null) {
@@ -35,24 +36,32 @@ public class ApiResponse {
                 target = new ApiSuccessResponse<>(body, linkHeader);
             }
         } else {
-            String errorMsg;
+            String errorMsg = "";
             if (response.errorBody() == null || TextUtils.isEmpty(response.errorBody().toString())) {
                 errorMsg = response.message();
             } else {
-                errorMsg = response.errorBody().toString();
+                try {
+                    errorMsg = response.errorBody().string();
+                } catch (IOException e) {
+                    // do nothing
+                }
             }
 
-            target = new ApiErrorResponse(TextUtils.isEmpty(errorMsg) ? "unknown error" : errorMsg);
+            target = new ApiErrorResponse<>(TextUtils.isEmpty(errorMsg) ? "unknown error" : errorMsg);
         }
 
         return target;
     }
 
-    public static class ApiEmptyResponse extends ApiResponse {
+    public static class ApiResponse<T> {
 
     }
 
-    public static class ApiSuccessResponse<T> extends ApiResponse {
+    public static class ApiEmptyResponse<T> extends ApiResponse<T> {
+
+    }
+
+    public static class ApiSuccessResponse<T> extends ApiResponse<T> {
 
         private final T body;
         private final Map<String, String> links;
@@ -65,7 +74,7 @@ public class ApiResponse {
         }
 
         public int getNextPage() {
-            if (nextPage == -2) {
+            if (nextPage == -2 && links != null) {
                 String next = links.get(StringUtil.NEXT_LINK);
 
                 if (next != null) {
@@ -91,7 +100,7 @@ public class ApiResponse {
         }
     }
 
-    public static class ApiErrorResponse extends ApiResponse {
+    public static class ApiErrorResponse<T> extends ApiResponse<T> {
 
         private String errorMessage;
 

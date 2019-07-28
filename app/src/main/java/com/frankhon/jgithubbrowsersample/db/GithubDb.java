@@ -7,6 +7,7 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 import com.frankhon.jgithubbrowsersample.vo.Repo;
+import com.frankhon.jgithubbrowsersample.vo.RepoSearchResult;
 import com.frankhon.jgithubbrowsersample.vo.User;
 
 /**
@@ -14,7 +15,11 @@ import com.frankhon.jgithubbrowsersample.vo.User;
  * E-mail: v-shhong@microsoft.com
  */
 @Database(
-        entities = {User.class, Repo.class},
+        entities = {
+                User.class,
+                Repo.class,
+                RepoSearchResult.class
+        },
         version = 1,
         exportSchema = false
 )
@@ -22,11 +27,11 @@ public abstract class GithubDb extends RoomDatabase {
 
     private static volatile GithubDb INSTANCE;
 
-    public static GithubDb getInstance(Context context){
-        if(INSTANCE==null){
-            synchronized (GithubDb.class){
-                if(INSTANCE==null){
-                    INSTANCE= Room
+    public static GithubDb getInstance(Context context) {
+        if (INSTANCE == null) {
+            synchronized (GithubDb.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = Room
                             .databaseBuilder(context.getApplicationContext(),
                                     GithubDb.class,
                                     "github.db")

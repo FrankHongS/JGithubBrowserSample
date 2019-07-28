@@ -2,10 +2,10 @@ package com.frankhon.jgithubbrowsersample.repository;
 
 import androidx.lifecycle.MutableLiveData;
 
-import com.frankhon.jgithubbrowsersample.api.ApiResponse;
-import com.frankhon.jgithubbrowsersample.api.ApiResponse.ApiEmptyResponse;
-import com.frankhon.jgithubbrowsersample.api.ApiResponse.ApiErrorResponse;
-import com.frankhon.jgithubbrowsersample.api.ApiResponse.ApiSuccessResponse;
+import com.frankhon.jgithubbrowsersample.api.ApiResponseUtil;
+import com.frankhon.jgithubbrowsersample.api.ApiResponseUtil.ApiEmptyResponse;
+import com.frankhon.jgithubbrowsersample.api.ApiResponseUtil.ApiErrorResponse;
+import com.frankhon.jgithubbrowsersample.api.ApiResponseUtil.ApiSuccessResponse;
 import com.frankhon.jgithubbrowsersample.api.GithubServiceImpl;
 import com.frankhon.jgithubbrowsersample.api.RepoSearchResponse;
 import com.frankhon.jgithubbrowsersample.db.GithubDb;
@@ -34,7 +34,7 @@ public class FetchNextSearchPageTask implements Runnable {
 
     private MutableLiveData<Resource<Boolean>> liveData = new MutableLiveData<>();
 
-    public FetchNextSearchPageTask(String query, GithubServiceImpl githubService, GithubDb db) {
+    FetchNextSearchPageTask(String query, GithubServiceImpl githubService, GithubDb db) {
         this.query = query;
         this.githubService = githubService;
         this.db = db;
@@ -58,7 +58,7 @@ public class FetchNextSearchPageTask implements Runnable {
 
         try {
             Response<RepoSearchResponse> response = githubService.searchRepos(query, nextPage).execute();
-            ApiResponse apiResponse = ApiResponse.create(response);
+            ApiResponseUtil.ApiResponse<RepoSearchResponse> apiResponse = ApiResponseUtil.create(response);
             if (apiResponse instanceof ApiSuccessResponse) {
                 ApiSuccessResponse<RepoSearchResponse> apiSuccessResponse = (ApiSuccessResponse<RepoSearchResponse>) apiResponse;
                 List<Integer> ids = new ArrayList<>(current.getRepoIds());
@@ -89,7 +89,7 @@ public class FetchNextSearchPageTask implements Runnable {
         liveData.postValue(newValue);
     }
 
-    public MutableLiveData<Resource<Boolean>> getLiveData() {
+    MutableLiveData<Resource<Boolean>> getLiveData() {
         return liveData;
     }
 }

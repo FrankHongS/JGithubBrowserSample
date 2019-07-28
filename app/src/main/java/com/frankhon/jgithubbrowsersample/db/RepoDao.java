@@ -38,20 +38,23 @@ public abstract class RepoDao {
     @Query("SELECT * FROM RepoSearchResult WHERE `query` = :query")
     public abstract LiveData<RepoSearchResult> search(String query);
 
-    public LiveData<List<Repo>> loadOrdered(List<Integer> repoIds){
-        if(repoIds==null){
+    @Query("SELECT * FROM repo WHERE owner_login = :ownerLogin AND name = :name")
+    public abstract LiveData<Repo> load(String ownerLogin, String name);
+
+    public LiveData<List<Repo>> loadOrdered(List<Integer> repoIds) {
+        if (repoIds == null) {
             return null;
         }
-        SparseIntArray order=new SparseIntArray();
-        for(int i=0;i<repoIds.size();i++){
-            order.put(repoIds.get(i),i);
+        SparseIntArray order = new SparseIntArray();
+        for (int i = 0; i < repoIds.size(); i++) {
+            order.put(repoIds.get(i), i);
         }
 
-        return Transformations.map(loadById(repoIds),repositories->{
+        return Transformations.map(loadById(repoIds), repositories -> {
             Collections.sort(repositories, (r1, r2) -> {
-                int pos1=order.get(r1.getId());
-                int pos2=order.get(r2.getId());
-                return pos1-pos2;
+                int pos1 = order.get(r1.getId());
+                int pos2 = order.get(r2.getId());
+                return pos1 - pos2;
             });
             return repositories;
         });

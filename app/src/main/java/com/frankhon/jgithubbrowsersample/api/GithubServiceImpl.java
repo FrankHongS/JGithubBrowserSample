@@ -3,6 +3,10 @@ package com.frankhon.jgithubbrowsersample.api;
 import androidx.lifecycle.LiveData;
 
 import com.frankhon.jgithubbrowsersample.util.LiveDataCallAdapterFactory;
+import com.frankhon.jgithubbrowsersample.vo.Repo;
+import com.frankhon.jgithubbrowsersample.vo.User;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -41,15 +45,19 @@ public class GithubServiceImpl {
         return INSTANCE;
     }
 
-    public LiveData<ApiResponse> getUser(String login) {
+    public LiveData<ApiResponseUtil.ApiResponse<User>> getUser(String login) {
         return mGithubService.getUser(login);
     }
 
-    public LiveData<ApiResponse> getRepos(String login) {
+    public LiveData<ApiResponseUtil.ApiResponse<List<Repo>>> getRepos(String login) {
         return mGithubService.getRepos(login);
     }
 
-    public LiveData<ApiResponse> searchRepos(String query) {
+    public LiveData<ApiResponseUtil.ApiResponse<Repo>> getRepo(String owner, String name) {
+        return mGithubService.getRepo(owner, name);
+    }
+
+    public LiveData<ApiResponseUtil.ApiResponse<RepoSearchResponse>> searchRepos(String query) {
         return mGithubService.searchRepos(query);
     }
 

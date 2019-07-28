@@ -1,5 +1,6 @@
 package com.frankhon.jgithubbrowsersample.vo;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.TypeConverters;
 
@@ -15,6 +16,7 @@ import java.util.List;
 @TypeConverters(GithubTypeConverters.class)
 public class RepoSearchResult {
 
+    @NonNull
     private String query;
 
     private List<Integer> repoIds;
@@ -23,13 +25,14 @@ public class RepoSearchResult {
 
     private int next;
 
-    public RepoSearchResult(String query, List<Integer> repoIds, int totalCount, int next) {
+    public RepoSearchResult(@NonNull String query, List<Integer> repoIds, int totalCount, int next) {
         this.query = query;
         this.repoIds = repoIds;
         this.totalCount = totalCount;
         this.next = next;
     }
 
+    @NonNull
     public String getQuery() {
         return query;
     }
