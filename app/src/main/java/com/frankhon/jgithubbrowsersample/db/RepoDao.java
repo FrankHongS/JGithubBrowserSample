@@ -9,6 +9,7 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
+import com.frankhon.jgithubbrowsersample.vo.Contributor;
 import com.frankhon.jgithubbrowsersample.vo.Repo;
 import com.frankhon.jgithubbrowsersample.vo.RepoSearchResult;
 
@@ -27,13 +28,22 @@ public abstract class RepoDao {
     public abstract void insert(Repo... repo);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    public abstract void insertRepos(List<Repo> repositories);
+    public abstract void insertContributors(List<Contributor> contributors);
 
-    @Query("SELECT * FROM Repo WHERE owner_login = :owner ORDER BY stars DESC")
-    public abstract LiveData<List<Repo>> loadRepositories(String owner);
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    public abstract void insertRepos(List<Repo> repositories);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public abstract void insert(RepoSearchResult result);
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    public abstract long createRepoIFNotExist(Repo repo);
+
+    @Query("SELECT login,imageUrl,repoName,repoOwner,contributors FROM contributor WHERE repoName=:name AND repoOwner=:owner ORDER BY contributors DESC")
+    public abstract LiveData<List<Contributor>> loadContributors(String owner, String name);
+
+    @Query("SELECT * FROM Repo WHERE owner_login = :owner ORDER BY stars DESC")
+    public abstract LiveData<List<Repo>> loadRepositories(String owner);
 
     @Query("SELECT * FROM RepoSearchResult WHERE `query` = :query")
     public abstract LiveData<RepoSearchResult> search(String query);

@@ -111,8 +111,43 @@ public final class RepoRepository {
     }
 
     public LiveData<Resource<List<Contributor>>> loadContributors(String owner, String name) {
-        // todo
-        return null;
+        return new NetworkBoundResource<List<Contributor>, List<Contributor>>(appExecutors) {
+            @Override
+            protected void saveCallResult(List<Contributor> item) {
+                for (Contributor contributor : item) {
+                    contributor.setRepoOwner(owner);
+                    contributor.setRepoName(name);
+                }
+
+                db.runInTransaction(() -> {
+                    repoDao.createRepoIFNotExist(new Repo(
+                            Repo.UNKNOWN_ID,
+                            name,
+                            String.format("%s/%s", owner, name),
+                            "",
+                            new Repo.Owner(owner, null),
+                            0
+                    ));
+
+                    repoDao.insertContributors(item);
+                });
+            }
+
+            @Override
+            protected boolean shouldFetch(List<Contributor> data) {
+                return data == null || data.isEmpty();
+            }
+
+            @Override
+            protected LiveData<List<Contributor>> loadFromDb() {
+                return repoDao.loadContributors(owner, name);
+            }
+
+            @Override
+            protected LiveData<ApiResponseUtil.ApiResponse<List<Contributor>>> createCall() {
+                return githubService.getContributors(owner, name);
+            }
+        }.asLiveData();
     }
 
     public LiveData<Resource<Boolean>> searchNextPage(String query) {

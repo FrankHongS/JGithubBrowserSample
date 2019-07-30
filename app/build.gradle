@@ -44,6 +44,9 @@ dependencies {
     implementation deps.retrofit.root
     implementation deps.retrofit.converter_gson
 
+    // Glide
+    implementation deps.glide.root
+
     // logger
     implementation deps.mylogger
 

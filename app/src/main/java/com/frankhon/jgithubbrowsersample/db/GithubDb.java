@@ -6,6 +6,7 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
+import com.frankhon.jgithubbrowsersample.vo.Contributor;
 import com.frankhon.jgithubbrowsersample.vo.Repo;
 import com.frankhon.jgithubbrowsersample.vo.RepoSearchResult;
 import com.frankhon.jgithubbrowsersample.vo.User;
@@ -18,9 +19,10 @@ import com.frankhon.jgithubbrowsersample.vo.User;
         entities = {
                 User.class,
                 Repo.class,
-                RepoSearchResult.class
+                RepoSearchResult.class,
+                Contributor.class
         },
-        version = 1,
+        version = 2,
         exportSchema = false
 )
 public abstract class GithubDb extends RoomDatabase {

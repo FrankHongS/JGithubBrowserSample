@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.frankhon.jgithubbrowsersample.AppExecutors;
 import com.frankhon.jgithubbrowsersample.R;
 import com.frankhon.jgithubbrowsersample.ui.common.RepoListAdapter;
-import com.frankhon.jgithubbrowsersample.ui.common.RepoListAdapter$RepoViewHolder_ViewBinding;
 import com.frankhon.jgithubbrowsersample.vo.Repo;
 
 import java.util.ArrayList;

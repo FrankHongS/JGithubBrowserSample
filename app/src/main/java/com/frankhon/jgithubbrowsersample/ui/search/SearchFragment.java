@@ -1,5 +1,6 @@
 package com.frankhon.jgithubbrowsersample.ui.search;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -10,7 +11,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,22 +21,26 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.frankhon.jgithubbrowsersample.AppExecutors;
+import com.frankhon.jgithubbrowsersample.MainActivity;
 import com.frankhon.jgithubbrowsersample.R;
+import com.frankhon.jgithubbrowsersample.di.InjectorUtils;
+import com.frankhon.jgithubbrowsersample.ui.common.LoadingFragment;
 import com.frankhon.jgithubbrowsersample.ui.common.RepoListAdapter;
+import com.frankhon.jgithubbrowsersample.ui.repo.RepoFragment;
 import com.frankhon.jgithubbrowsersample.util.Util;
-import com.frankhon.jgithubbrowsersample.viewmodel.GithubViewModelFactory;
 import com.google.android.material.snackbar.Snackbar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static com.frankhon.jgithubbrowsersample.util.RequestStatus.ERROR;
 import static com.frankhon.jgithubbrowsersample.util.RequestStatus.LOADING;
 
 /**
  * Created by Frank_Hon on 7/22/2019.
  * E-mail: v-shhong@microsoft.com
  */
-public class SearchFragment extends Fragment {
+public class SearchFragment extends LoadingFragment {
 
     @BindView(R.id.repo_list)
     RecyclerView repoList;
@@ -43,10 +48,6 @@ public class SearchFragment extends Fragment {
     ProgressBar loadMoreBar;
     @BindView(R.id.input)
     EditText input;
-    @BindView(R.id.retry)
-    Button retry;
-    @BindView(R.id.progress_bar)
-    ProgressBar progressBar;
 
     private SearchViewModel searchViewModel;
 
@@ -63,14 +64,14 @@ public class SearchFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        searchViewModel = ViewModelProviders.of(this, new GithubViewModelFactory(getContext())).get(SearchViewModel.class);
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        searchViewModel = ViewModelProviders.of(this, InjectorUtils.provideSearchViewModelFactory(getContext())).get(SearchViewModel.class);
 
         initRecyclerView();
         initSearchInputListener();
 
-        retry.setOnClickListener(v -> searchViewModel.refresh());
+        setOnRetryClickListener(v -> searchViewModel.refresh());
     }
 
     private void initSearchInputListener() {
@@ -104,7 +105,15 @@ public class SearchFragment extends Fragment {
         repoList.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new RepoListAdapter(AppExecutors.getInstance());
         adapter.setOnRepoClickListener(repo -> {
-            Toast.makeText(getContext(), repo.getName(), Toast.LENGTH_SHORT).show();
+            Activity activity = getActivity();
+            if (activity != null) {// todo 优化
+                Bundle bundle = new Bundle();
+                bundle.putString(RepoFragment.KEY_LOGIN, repo.getOwner().getLogin());
+                bundle.putString(RepoFragment.KEY_NAME, repo.getName());
+                RepoFragment repoFragment = new RepoFragment();
+                repoFragment.setArguments(bundle);
+                ((MainActivity) activity).navigateTo(repoFragment);
+            }
         });
         repoList.setAdapter(adapter);
         repoList.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -124,7 +133,8 @@ public class SearchFragment extends Fragment {
 
         searchViewModel.getResults().observe(this, result -> {
             if (result != null) {
-                progressBar.setVisibility(result.getStatus() == LOADING ? View.VISIBLE : View.GONE);
+                processLoadingState(result);
+
                 Log.d("Hon", result.getStatus() + "");
                 if (result.getData() != null) {
                     int size = result.getData().size();

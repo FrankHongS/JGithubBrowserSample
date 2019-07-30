@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.AsyncDifferConfig;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 
+import com.bumptech.glide.Glide;
 import com.frankhon.jgithubbrowsersample.AppExecutors;
 import com.frankhon.jgithubbrowsersample.R;
 import com.frankhon.jgithubbrowsersample.ui.common.BaseViewHolder;
@@ -77,15 +78,19 @@ public class ContributorAdapter extends ListAdapter<Contributor, BaseViewHolder<
 
         @Override
         public void bindView(Contributor item) {
+            Glide.with(itemView.getContext())
+                    .load(item.getImageUrl())
+                    .into(avatar);
+
             contributorCard.setOnClickListener(v -> {
                 if (onContributorClickListener != null) {
-                    onContributorClickListener.onClick(item, avatar);
+                    onContributorClickListener.onClick(item);
                 }
             });
         }
     }
 
     interface OnContributorClickListener {
-        void onClick(Contributor contributor, ImageView imageView);
+        void onClick(Contributor contributor);
     }
 }

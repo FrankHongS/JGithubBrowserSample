@@ -2,6 +2,7 @@ package com.frankhon.jgithubbrowsersample.api;
 
 import androidx.lifecycle.LiveData;
 
+import com.frankhon.jgithubbrowsersample.vo.Contributor;
 import com.frankhon.jgithubbrowsersample.vo.Repo;
 import com.frankhon.jgithubbrowsersample.vo.User;
 
@@ -30,6 +31,9 @@ public interface GithubService {
 
     @GET("repos/{owner}/{name}")
     LiveData<ApiResponse<Repo>> getRepo(@Path("owner") String owner, @Path("name") String name);
+
+    @GET("repos/{owner}/{name}/contributors")
+    LiveData<ApiResponse<List<Contributor>>> getContributors(@Path("owner") String owner, @Path("name") String name);
 
     @GET("search/repositories")
     LiveData<ApiResponse<RepoSearchResponse>> searchRepos(@Query("q") String query);

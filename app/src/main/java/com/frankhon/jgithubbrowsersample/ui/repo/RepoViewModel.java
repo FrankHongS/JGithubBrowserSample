@@ -31,6 +31,16 @@ public class RepoViewModel extends ViewModel {
         this.repository = repository;
     }
 
+    public LiveData<Resource<Repo>> getRepo(){
+        return Transformations.switchMap(repoId,input ->
+                input.ifExists((owner, name) -> repository.loadRepo(owner,name)));
+    }
+
+    public LiveData<Resource<List<Contributor>>> getContributors(){
+        return Transformations.switchMap(repoId,input ->
+                input.ifExists((owner, name) -> repository.loadContributors(owner,name)));
+    }
+
     public void retry() {
         RepoId value = repoId.getValue();
 
@@ -52,21 +62,11 @@ public class RepoViewModel extends ViewModel {
         }
     }
 
-    public LiveData<Resource<List<Contributor>>> getContributors(){
-        return Transformations.switchMap(repoId,input ->
-                input.ifExists((owner, name) -> repository.loadContributors(owner,name)));
-    }
-
-    public LiveData<Resource<Repo>> getRepo(){
-        return Transformations.switchMap(repoId,input ->
-                input.ifExists((owner, name) -> repository.loadRepo(owner,name)));
-    }
-
     class RepoId {
         private String owner;
         private String name;
 
-        public RepoId(String owner, String name) {
+        RepoId(String owner, String name) {
             this.owner = owner;
             this.name = name;
         }

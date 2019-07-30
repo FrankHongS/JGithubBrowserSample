@@ -16,21 +16,18 @@ import com.frankhon.jgithubbrowsersample.ui.search.SearchViewModel;
  * Created by Frank Hon on 2019-07-27 02:15.
  * E-mail: frank_hon@foxmail.com
  */
-public class GithubViewModelFactory implements ViewModelProvider.Factory {
+public class SearchViewModelFactory implements ViewModelProvider.Factory {
 
-    private Context context;
+    private RepoRepository repository;
 
-    public GithubViewModelFactory(Context context) {
-        this.context = context;
+    public SearchViewModelFactory(RepoRepository repository) {
+        this.repository = repository;
     }
 
     @NonNull
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-        return (T) new SearchViewModel(RepoRepository.getInstance(
-                AppExecutors.getInstance(),
-                GithubDb.getInstance(context),
-                GithubServiceImpl.getInstance()
-        ));
+        //noinspection unchecked
+        return (T) new SearchViewModel(repository);
     }
 }
