@@ -89,13 +89,13 @@ public class ContributorAdapter extends ListAdapter<Contributor, BaseViewHolder<
 
             contributorCard.setOnClickListener(v -> {
                 if (onContributorClickListener != null) {
-                    onContributorClickListener.onClick(item);
+                    onContributorClickListener.onClick(item, avatar);
                 }
             });
         }
     }
 
     interface OnContributorClickListener {
-        void onClick(Contributor contributor);
+        void onClick(Contributor contributor, ImageView imageView);
     }
 }

@@ -1,6 +1,8 @@
 package com.frankhon.jgithubbrowsersample.ui.repo;
 
+import android.app.Activity;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,14 +11,18 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.transition.TransitionInflater;
 
 import com.frankhon.jgithubbrowsersample.AppExecutors;
+import com.frankhon.jgithubbrowsersample.MainActivity;
 import com.frankhon.jgithubbrowsersample.R;
 import com.frankhon.jgithubbrowsersample.di.InjectorUtils;
 import com.frankhon.jgithubbrowsersample.ui.common.LoadingFragment;
+import com.frankhon.jgithubbrowsersample.ui.user.UserFragment;
 import com.frankhon.jgithubbrowsersample.vo.Contributor;
 import com.frankhon.jgithubbrowsersample.vo.Repo;
 
@@ -50,6 +56,8 @@ public class RepoFragment extends LoadingFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.repo_fragment, container, false);
         ButterKnife.bind(this, view);
+
+        setSharedElementReturnTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.move));
         return view;
     }
 
@@ -84,8 +92,13 @@ public class RepoFragment extends LoadingFragment {
 
     private void initContributorList() {
         adapter = new ContributorAdapter(AppExecutors.getInstance());
-        adapter.setOnContributorClickListener(contributor->{
-            Toast.makeText(getContext(), contributor.getImageUrl(), Toast.LENGTH_SHORT).show();
+        adapter.setOnContributorClickListener((contributor, avatar) -> {
+            Pair<View, String> pair = new Pair<>(avatar, contributor.getLogin());
+            Activity activity = getActivity();
+            if (activity != null) {
+                Fragment userFragment = new UserFragment();
+                ((MainActivity) activity).navigateTo(userFragment, pair);
+            }
         });
         contributorList.setAdapter(adapter);
         contributorList.setLayoutManager(new LinearLayoutManager(getContext()));

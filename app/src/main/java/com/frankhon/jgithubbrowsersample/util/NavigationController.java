@@ -1,5 +1,8 @@
 package com.frankhon.jgithubbrowsersample.util;
 
+import android.util.Pair;
+import android.view.View;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -27,6 +30,14 @@ public class NavigationController {
     public void navigateTo(Fragment target) {
         fragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, target)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    public void navigateTo(Fragment target, Pair<View,String> sharedElement) {
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, target)
+                .addSharedElement(sharedElement.first,sharedElement.second)
                 .addToBackStack(null)
                 .commit();
     }

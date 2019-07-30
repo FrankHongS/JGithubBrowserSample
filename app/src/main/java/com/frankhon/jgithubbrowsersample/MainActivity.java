@@ -5,6 +5,8 @@ import androidx.fragment.app.Fragment;
 
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.util.Pair;
+import android.view.View;
 
 import com.frankhon.jgithubbrowsersample.ui.search.SearchFragment;
 import com.frankhon.jgithubbrowsersample.util.NavigationController;
@@ -33,5 +35,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void navigateTo(Fragment fragment) {
         navigationController.navigateTo(fragment);
+    }
+
+    public void navigateTo(Fragment fragment, Pair<View, String> sharedElement) {
+        navigationController.navigateTo(fragment, sharedElement);
     }
 }
