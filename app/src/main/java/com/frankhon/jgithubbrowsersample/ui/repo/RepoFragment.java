@@ -73,9 +73,6 @@ public class RepoFragment extends LoadingFragment {
                 if (repo != null) {
                     name.setText(repo.getName());
                     description.setText(repo.getDescription());
-                } else {
-                    name.setVisibility(View.GONE);
-                    description.setVisibility(View.GONE);
                 }
             }
         });
@@ -88,7 +85,7 @@ public class RepoFragment extends LoadingFragment {
     private void initContributorList() {
         adapter = new ContributorAdapter(AppExecutors.getInstance());
         adapter.setOnContributorClickListener(contributor->{
-            Toast.makeText(getContext(), contributor.getLogin(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), contributor.getImageUrl(), Toast.LENGTH_SHORT).show();
         });
         contributorList.setAdapter(adapter);
         contributorList.setLayoutManager(new LinearLayoutManager(getContext()));

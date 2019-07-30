@@ -31,7 +31,7 @@ public class Contributor {
     @SerializedName("contributors")
     private int contributors;
 
-    @SerializedName("image_url")
+    @SerializedName("avatar_url")
     private String imageUrl;
 
     // does not show up in the response but set in post processing.

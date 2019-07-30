@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -71,6 +72,8 @@ public class ContributorAdapter extends ListAdapter<Contributor, BaseViewHolder<
         CardView contributorCard;
         @BindView(R.id.iv_avatar)
         ImageView avatar;
+        @BindView(R.id.tv_login)
+        TextView login;
 
         ContributorViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -81,6 +84,8 @@ public class ContributorAdapter extends ListAdapter<Contributor, BaseViewHolder<
             Glide.with(itemView.getContext())
                     .load(item.getImageUrl())
                     .into(avatar);
+
+            login.setText(item.getLogin());
 
             contributorCard.setOnClickListener(v -> {
                 if (onContributorClickListener != null) {

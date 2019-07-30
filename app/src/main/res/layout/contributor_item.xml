@@ -25,7 +25,7 @@
             android:adjustViewBounds="false"
             android:cropToPadding="false"
             android:scaleType="centerCrop"
-            app:srcCompat="@drawable/ic_star_border_black_36dp"
+            tools:srcCompat="@drawable/ic_star_border_black_36dp"
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginTop="@dimen/default_margin"
             app:layout_constraintStart_toStartOf="parent"
@@ -35,7 +35,7 @@
             />
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/tv_login"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="Yigit Boyar"
