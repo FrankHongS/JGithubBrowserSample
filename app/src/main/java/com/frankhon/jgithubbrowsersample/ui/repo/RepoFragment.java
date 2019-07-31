@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -62,8 +61,8 @@ public class RepoFragment extends LoadingFragment {
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         repoViewModel = ViewModelProviders.of(this, InjectorUtils.provideRepoViewModelFactory(getContext())).get(RepoViewModel.class);
 
         Bundle arguments = getArguments();
@@ -96,6 +95,10 @@ public class RepoFragment extends LoadingFragment {
             Pair<View, String> pair = new Pair<>(avatar, contributor.getLogin());
             Activity activity = getActivity();
             if (activity != null) {
+                Bundle bundle = new Bundle();
+                bundle.putString(UserFragment.KEY_LOGIN, contributor.getLogin());
+                bundle.putString(UserFragment.KEY_AVATAR, contributor.getImageUrl());
+
                 Fragment userFragment = new UserFragment();
                 ((MainActivity) activity).navigateTo(userFragment, pair);
             }
