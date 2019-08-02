@@ -12,7 +12,7 @@ ext.versions = [
         'rxJava'          : '2.2.8',
         'rxAndroid'       : '2.1.1',
         'rxPermissions'   : '0.10.2',
-        'glide'           : '3.7.0',
+        'glide'           : '4.9.0',
         'butterknife'     : '10.1.0',
         'eventbus'        : '3.1.1',
         'simplechartview' : '0.0.3',
@@ -40,7 +40,8 @@ ext.deps = [
                 'espresso': "androidx.test.espresso:espresso-core:${versions.espresso}"
         ],
         'glide'               : [
-                'root': "com.github.bumptech.glide:glide:${versions.glide}"
+                'root': "com.github.bumptech.glide:glide:${versions.glide}",
+                'compiler':"com.github.bumptech.glide:compiler:${versions.glide}"
         ],
         'eventbus'            : "org.greenrobot:eventbus:${versions.eventbus}",
         'datepicker'          : "com.wdullaer:materialdatetimepicker:${versions.datepicker}",

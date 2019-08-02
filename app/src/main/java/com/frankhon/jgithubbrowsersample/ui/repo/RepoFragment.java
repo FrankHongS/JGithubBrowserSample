@@ -10,11 +10,13 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.TransitionInflater;
+import androidx.transition.TransitionSet;
 
 import com.frankhon.jgithubbrowsersample.AppExecutors;
 import com.frankhon.jgithubbrowsersample.MainActivity;
@@ -56,7 +58,10 @@ public class RepoFragment extends LoadingFragment {
         View view = inflater.inflate(R.layout.repo_fragment, container, false);
         ButterKnife.bind(this, view);
 
-        setSharedElementReturnTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.move));
+        TransitionSet returnTransitionSet=new TransitionSet();
+        returnTransitionSet.addTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.move));
+        returnTransitionSet.setDuration(1000);
+        setSharedElementReturnTransition(returnTransitionSet);
         return view;
     }
 
@@ -92,14 +97,17 @@ public class RepoFragment extends LoadingFragment {
     private void initContributorList() {
         adapter = new ContributorAdapter(AppExecutors.getInstance());
         adapter.setOnContributorClickListener((contributor, avatar) -> {
-            Pair<View, String> pair = new Pair<>(avatar, contributor.getLogin());
             Activity activity = getActivity();
             if (activity != null) {
+                Pair<View, String> pair = new Pair<>(avatar, contributor.getLogin());
+                ViewCompat.setTransitionName(avatar,contributor.getLogin());
+
                 Bundle bundle = new Bundle();
                 bundle.putString(UserFragment.KEY_LOGIN, contributor.getLogin());
                 bundle.putString(UserFragment.KEY_AVATAR, contributor.getImageUrl());
 
                 Fragment userFragment = new UserFragment();
+                userFragment.setArguments(bundle);
                 ((MainActivity) activity).navigateTo(userFragment, pair);
             }
         });

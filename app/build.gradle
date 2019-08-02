@@ -46,6 +46,7 @@ dependencies {
 
     // Glide
     implementation deps.glide.root
+    annotationProcessor deps.glide.compiler
 
     // logger
     implementation deps.mylogger
