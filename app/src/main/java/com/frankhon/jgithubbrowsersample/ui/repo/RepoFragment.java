@@ -6,10 +6,12 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.SharedElementCallback;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
@@ -29,6 +31,7 @@ import com.frankhon.jgithubbrowsersample.vo.Repo;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -58,10 +61,8 @@ public class RepoFragment extends LoadingFragment {
         View view = inflater.inflate(R.layout.repo_fragment, container, false);
         ButterKnife.bind(this, view);
 
-        TransitionSet returnTransitionSet=new TransitionSet();
-        returnTransitionSet.addTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.move));
-        returnTransitionSet.setDuration(1000);
-        setSharedElementReturnTransition(returnTransitionSet);
+        setExitTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.move));
+
         return view;
     }
 
@@ -92,6 +93,8 @@ public class RepoFragment extends LoadingFragment {
         setOnRetryClickListener(v -> repoViewModel.retry());
 
         initContributorList();
+
+        postponeEnterTransition();
     }
 
     private void initContributorList() {
@@ -113,6 +116,11 @@ public class RepoFragment extends LoadingFragment {
         });
         contributorList.setAdapter(adapter);
         contributorList.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        contributorList.getViewTreeObserver().addOnPreDrawListener(() -> {
+            startPostponedEnterTransition();
+            return true;
+        });
 
         repoViewModel.getContributors().observe(this, listResource -> {
             if (listResource != null) {

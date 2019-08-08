@@ -14,12 +14,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
+import androidx.core.app.SharedElementCallback;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.TransitionInflater;
-import androidx.transition.TransitionSet;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -32,6 +31,9 @@ import com.frankhon.jgithubbrowsersample.di.InjectorUtils;
 import com.frankhon.jgithubbrowsersample.ui.common.LoadingFragment;
 import com.frankhon.jgithubbrowsersample.ui.common.RepoListAdapter;
 import com.frankhon.jgithubbrowsersample.vo.User;
+
+import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -63,10 +65,18 @@ public class UserFragment extends LoadingFragment {
         View view = inflater.inflate(R.layout.user_fragment, container, false);
         ButterKnife.bind(this, view);
 
-        TransitionSet enterTransitionSet=new TransitionSet();
-        enterTransitionSet.addTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.move));
-        enterTransitionSet.setDuration(3000);
-        setSharedElementEnterTransition(enterTransitionSet);
+        setSharedElementEnterTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.move));
+        setEnterSharedElementCallback(new SharedElementCallback() {
+            @Override
+            public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
+                sharedElements.put(names.get(0), avatar);
+            }
+        });
+
+        if (savedInstanceState == null) {
+            postponeEnterTransition();
+        }
+
         return view;
     }
 
@@ -84,7 +94,7 @@ public class UserFragment extends LoadingFragment {
 
             String avatarUrl = arguments.getString(KEY_AVATAR);
 
-            ViewCompat.setTransitionName(avatar, login);
+//            ViewCompat.setTransitionName(avatar, login);
 
             // When the image is loaded, set the image request listener to start the transaction
             Glide.with(this)
