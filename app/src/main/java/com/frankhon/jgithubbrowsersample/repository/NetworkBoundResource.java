@@ -24,14 +24,17 @@ public abstract class NetworkBoundResource<ResultType, RequestType> {
     NetworkBoundResource(AppExecutors appExecutors) {
         this.appExecutors = appExecutors;
 
+        Log.d("Hon", "NetworkBoundResource: init");
         result.setValue(ResourceUtil.loading(null));
         LiveData<ResultType> dbSource = loadFromDb();
         result.addSource(dbSource, data -> {
             Log.d("Hon", "loadFromDb changed: ");
             result.removeSource(dbSource);
             if (shouldFetch(data)) {
+                Log.d("Hon", "shouldFetch: true");
                 fetchFromNetwork(dbSource);
             } else {
+                Log.d("Hon", "shouldFetch: false");
                 result.addSource(dbSource, newData -> {
                     Log.d("Hon", "NetworkBoundResource: 5");
                     setValue(ResourceUtil.success(newData));
@@ -41,7 +44,7 @@ public abstract class NetworkBoundResource<ResultType, RequestType> {
     }
 
     private void setValue(Resource<ResultType> newValue) {
-        Log.d("Hon", "setValue: ");
+        Log.d("Hon", "setValue: "+newValue.getData());
         if (result.getValue() != newValue) {
             result.setValue(newValue);
         }

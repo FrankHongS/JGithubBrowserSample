@@ -2,26 +2,22 @@ package com.frankhon.jgithubbrowsersample.ui.search;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.frankhon.jgithubbrowsersample.AppExecutors;
-import com.frankhon.jgithubbrowsersample.MainActivity;
 import com.frankhon.jgithubbrowsersample.R;
 import com.frankhon.jgithubbrowsersample.di.InjectorUtils;
 import com.frankhon.jgithubbrowsersample.ui.common.LoadingFragment;
@@ -32,9 +28,6 @@ import com.google.android.material.snackbar.Snackbar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-import static com.frankhon.jgithubbrowsersample.util.RequestStatus.ERROR;
-import static com.frankhon.jgithubbrowsersample.util.RequestStatus.LOADING;
 
 /**
  * Created by Frank_Hon on 7/22/2019.
@@ -105,15 +98,17 @@ public class SearchFragment extends LoadingFragment {
         repoList.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new RepoListAdapter(AppExecutors.getInstance());
         adapter.setOnRepoClickListener(repo -> {
-            Activity activity = getActivity();
-            if (activity != null) {// todo 优化
-                Bundle bundle = new Bundle();
-                bundle.putString(RepoFragment.KEY_LOGIN, repo.getOwner().getLogin());
-                bundle.putString(RepoFragment.KEY_NAME, repo.getName());
-                RepoFragment repoFragment = new RepoFragment();
-                repoFragment.setArguments(bundle);
-                ((MainActivity) activity).navigateTo(repoFragment);
-            }
+            Util.dismissKeyboard(getContext(), repoList);
+
+            Bundle args = new Bundle();
+            args.putString(RepoFragment.KEY_LOGIN, repo.getOwner().getLogin());
+            args.putString(RepoFragment.KEY_NAME, repo.getName());
+            NavHostFragment.findNavController(this)
+                    .navigate(
+                            R.id.repoFragment,
+                            args,
+                            null
+                    );
         });
         repoList.setAdapter(adapter);
         repoList.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -122,9 +117,7 @@ public class SearchFragment extends LoadingFragment {
                 if (recyclerView.getLayoutManager() != null) {
                     LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
                     int lastPosition = layoutManager.findLastVisibleItemPosition();
-                    Log.d("Hua", "onScrolled: " + lastPosition + "  " + (adapter.getItemCount() - 1));
                     if (lastPosition != -1 && !shouldLoadingMore && lastPosition == adapter.getItemCount() - 1) {
-                        Log.d("Hon", "onScrolled: loadNextPage " + lastPosition);
                         searchViewModel.loadNextPage();
                     }
                 }
@@ -135,13 +128,6 @@ public class SearchFragment extends LoadingFragment {
             if (result != null) {
                 processLoadingState(result);
 
-                Log.d("Hon", result.getStatus() + "");
-                if (result.getData() != null) {
-                    int size = result.getData().size();
-                    Log.d("Hon", "size: " + size);
-                    Log.d("Hon", result.getData().get(0).toString());
-                    Log.d("Hon", result.getData().get(size - 1).toString());
-                }
                 adapter.submitList(result.getData());
             }
         });
@@ -149,10 +135,8 @@ public class SearchFragment extends LoadingFragment {
         searchViewModel.getLoadMoreState().observe(this, loadingMore -> {
 
             if (loadingMore == null) {
-                Log.d("Hon", "loadingMore: null");
                 shouldLoadingMore = false;
             } else {
-                Log.d("Hon", "loadingMore: " + loadingMore.isRunning());
                 shouldLoadingMore = loadingMore.isRunning();
                 String error = loadingMore.getErrorMessage();
                 if (error != null) {

@@ -111,6 +111,7 @@ public final class RepoRepository {
     }
 
     public LiveData<Resource<List<Contributor>>> loadContributors(String owner, String name) {
+        Log.d("Hon", "loadContributors: ");
         return new NetworkBoundResource<List<Contributor>, List<Contributor>>(appExecutors) {
             @Override
             protected void saveCallResult(List<Contributor> item) {

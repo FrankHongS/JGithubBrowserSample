@@ -30,6 +30,10 @@ dependencies {
     implementation deps.support.material
     implementation deps.support.constraintlayout
 
+    // navigation
+    implementation deps.navigation.navigation_fragment
+    implementation deps.navigation.navigation_ui
+
     // lifecycle
     implementation deps.lifecycle_extensions
     // room

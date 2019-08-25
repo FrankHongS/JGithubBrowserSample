@@ -1,6 +1,7 @@
 package com.frankhon.jgithubbrowsersample.ui.repo;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -23,22 +24,26 @@ import java.util.Objects;
  */
 public class RepoViewModel extends ViewModel {
 
-    private RepoRepository repository;
+    private MutableLiveData<RepoId> repoId = new MutableLiveData<>();
 
-    private MutableLiveData<RepoId> repoId=new MutableLiveData<>();
+    private LiveData<Resource<List<Contributor>>> contributors;
+    private LiveData<Resource<Repo>> repo;
 
+    @SuppressWarnings("Convert2MethodRef")
     public RepoViewModel(RepoRepository repository) {
-        this.repository = repository;
+        contributors = Transformations.switchMap(repoId, input ->
+                input.ifExists((owner, name) -> repository.loadContributors(owner, name)));
+
+        repo = Transformations.switchMap(repoId, input ->
+                input.ifExists((owner, name) -> repository.loadRepo(owner, name)));
     }
 
-    public LiveData<Resource<Repo>> getRepo(){
-        return Transformations.switchMap(repoId,input ->
-                input.ifExists((owner, name) -> repository.loadRepo(owner,name)));
+    public LiveData<Resource<Repo>> getRepo() {
+        return repo;
     }
 
-    public LiveData<Resource<List<Contributor>>> getContributors(){
-        return Transformations.switchMap(repoId,input ->
-                input.ifExists((owner, name) -> repository.loadContributors(owner,name)));
+    public LiveData<Resource<List<Contributor>>> getContributors() {
+        return contributors;
     }
 
     public void retry() {

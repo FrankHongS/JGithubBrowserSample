@@ -35,7 +35,8 @@
             android:contentDescription="@string/a11y_user_name"
             app:layout_constraintStart_toEndOf="@+id/avatar"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="albert einstein" />
+            tools:text="albert einstein"
+            android:layout_marginLeft="@dimen/default_margin" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

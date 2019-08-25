@@ -1,5 +1,6 @@
 package com.frankhon.jgithubbrowsersample.ui.repo;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +9,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.AsyncDifferConfig;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
@@ -40,7 +42,7 @@ public class ContributorAdapter extends ListAdapter<Contributor, BaseViewHolder<
 
                     @Override
                     public boolean areContentsTheSame(@NonNull Contributor oldItem, @NonNull Contributor newItem) {
-                        return Objects.equals(oldItem.getImageUrl(), newItem.getImageUrl()) &&
+                        return oldItem.getImageUrl().equals(newItem.getImageUrl()) &&
                                 oldItem.getContributors() == newItem.getContributors();
                     }
                 }
@@ -81,6 +83,8 @@ public class ContributorAdapter extends ListAdapter<Contributor, BaseViewHolder<
 
         @Override
         public void bindView(Contributor item) {
+            ViewCompat.setTransitionName(avatar, item.getLogin());
+
             Glide.with(itemView.getContext())
                     .load(item.getImageUrl())
                     .into(avatar);

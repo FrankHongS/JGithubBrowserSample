@@ -1,6 +1,7 @@
 package com.frankhon.jgithubbrowsersample.ui.user;
 
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,7 +16,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.SharedElementCallback;
+import androidx.core.view.ViewCompat;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.TransitionInflater;
@@ -30,6 +33,7 @@ import com.frankhon.jgithubbrowsersample.R;
 import com.frankhon.jgithubbrowsersample.di.InjectorUtils;
 import com.frankhon.jgithubbrowsersample.ui.common.LoadingFragment;
 import com.frankhon.jgithubbrowsersample.ui.common.RepoListAdapter;
+import com.frankhon.jgithubbrowsersample.ui.repo.RepoFragment;
 import com.frankhon.jgithubbrowsersample.vo.User;
 
 import java.util.List;
@@ -66,12 +70,6 @@ public class UserFragment extends LoadingFragment {
         ButterKnife.bind(this, view);
 
         setSharedElementEnterTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.move));
-        setEnterSharedElementCallback(new SharedElementCallback() {
-            @Override
-            public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
-                sharedElements.put(names.get(0), avatar);
-            }
-        });
 
         if (savedInstanceState == null) {
             postponeEnterTransition();
@@ -94,7 +92,7 @@ public class UserFragment extends LoadingFragment {
 
             String avatarUrl = arguments.getString(KEY_AVATAR);
 
-//            ViewCompat.setTransitionName(avatar, login);
+            ViewCompat.setTransitionName(avatar, login);
 
             // When the image is loaded, set the image request listener to start the transaction
             Glide.with(this)
@@ -115,7 +113,6 @@ public class UserFragment extends LoadingFragment {
                     .into(avatar);
 
             handler.postDelayed(this::startPostponedEnterTransition, 1000);
-            postponeEnterTransition();
 
         }
 
@@ -142,15 +139,25 @@ public class UserFragment extends LoadingFragment {
     private void initRepoList() {
         adapter = new RepoListAdapter(AppExecutors.getInstance());
         adapter.setOnRepoClickListener(repo -> {
-            Toast.makeText(getContext(), repo.getName(), Toast.LENGTH_SHORT).show();
+            Bundle args = new Bundle();
+            args.putString(RepoFragment.KEY_LOGIN, repo.getOwner().getLogin());
+            args.putString(RepoFragment.KEY_NAME, repo.getName());
+            NavHostFragment.findNavController(this)
+                    .navigate(
+                            R.id.repoFragment,
+                            args,
+                            null
+                    );
         });
 
         repoList.setLayoutManager(new LinearLayoutManager(getContext()));
         repoList.setAdapter(adapter);
 
-        userViewModel.getRepositories().observe(this, repos -> {
-            if (repos != null) {
-                adapter.submitList(repos.getData());
+        userViewModel.getRepositories().observe(this, reposRes -> {
+            if (reposRes != null) {
+                processLoadingState(reposRes);
+
+                adapter.submitList(reposRes.getData());
             }
         });
     }
