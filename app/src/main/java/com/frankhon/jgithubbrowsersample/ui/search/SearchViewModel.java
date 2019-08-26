@@ -1,7 +1,6 @@
 package com.frankhon.jgithubbrowsersample.ui.search;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -114,7 +113,6 @@ public class SearchViewModel extends ViewModel {
         }
 
         private void queryNextPage(String query) {
-            Log.d("Hon", "queryNextPage: "+query+"  "+this.query);
             if (query == null || this.query.equals(query)) {
                 return;
             }

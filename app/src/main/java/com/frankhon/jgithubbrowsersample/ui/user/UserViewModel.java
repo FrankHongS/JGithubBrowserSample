@@ -22,34 +22,34 @@ import java.util.List;
  */
 public class UserViewModel extends ViewModel {
 
-    private UserRepository userRepository;
-    private RepoRepository repoRepository;
-
     private MutableLiveData<String> login = new MutableLiveData<>();
+    private LiveData<Resource<List<Repo>>> repositories;
+    private LiveData<Resource<User>> user;
 
     public UserViewModel(UserRepository userRepository, RepoRepository repoRepository) {
-        this.userRepository = userRepository;
-        this.repoRepository = repoRepository;
-    }
-
-    public LiveData<Resource<List<Repo>>> getRepositories() {
-        return Transformations.switchMap(login, loginStr -> {
+        this.repositories = Transformations.switchMap(login, loginStr -> {
             if (TextUtils.isEmpty(loginStr)) {
                 return AbsentLiveData.create();
             } else {
                 return repoRepository.loadRepos(loginStr);
             }
         });
-    }
 
-    public LiveData<Resource<User>> getUser() {
-        return Transformations.switchMap(login, loginStr -> {
+        this.user = Transformations.switchMap(login, loginStr -> {
             if (TextUtils.isEmpty(loginStr)) {
                 return AbsentLiveData.create();
             } else {
                 return userRepository.loadUser(loginStr);
             }
         });
+    }
+
+    public LiveData<Resource<List<Repo>>> getRepositories() {
+        return repositories;
+    }
+
+    public LiveData<Resource<User>> getUser() {
+        return user;
     }
 
     public void setLogin(String loginStr) {

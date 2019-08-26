@@ -68,13 +68,10 @@ public class UserFragment extends LoadingFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.user_fragment, container, false);
         ButterKnife.bind(this, view);
-
         setSharedElementEnterTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.move));
-
         if (savedInstanceState == null) {
             postponeEnterTransition();
         }
-
         return view;
     }
 
@@ -156,7 +153,6 @@ public class UserFragment extends LoadingFragment {
         userViewModel.getRepositories().observe(this, reposRes -> {
             if (reposRes != null) {
                 processLoadingState(reposRes);
-
                 adapter.submitList(reposRes.getData());
             }
         });
